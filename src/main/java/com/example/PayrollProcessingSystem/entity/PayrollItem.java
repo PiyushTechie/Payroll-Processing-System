@@ -1,5 +1,7 @@
 package com.example.PayrollProcessingSystem.entity;
+
 import java.math.BigDecimal;
+import java.util.UUID;
 
 import com.example.PayrollProcessingSystem.enums.ComponentCategory;
 import com.example.PayrollProcessingSystem.enums.ComponentName;
@@ -14,6 +16,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * Represents an individual component of an employee's payroll,
+ * such as basic salary, allowances, or deductions.
+ */
 @Entity
 @Table(name = "payroll_items")
 @Getter
@@ -24,12 +30,12 @@ import lombok.Setter;
 public class PayrollItem {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long payrollItemId;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID payrollItemId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "payroll_record_id", nullable = false)
-    @JsonBackReference
+    @JsonBackReference("payroll-record-items")
     private PayrollRecord payrollRecord;
 
     @NotNull

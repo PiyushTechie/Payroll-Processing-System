@@ -1,5 +1,8 @@
 package com.example.PayrollProcessingSystem.enums;
 
+/**
+ * Enumeration of standard component names used in the payroll system.
+ */
 public enum ComponentName {
     BASIC,
     HRA,

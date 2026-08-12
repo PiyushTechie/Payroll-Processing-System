@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import com.example.PayrollProcessingSystem.enums.PayrollRunStatus;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -17,8 +18,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * Represents a batch payroll processing event for a specific time period.
+ * Groups together individual payroll records for multiple employees.
+ */
 @Entity
-@Table(name = "payroll_runs")
+@Table(name = "payroll_runs", indexes = {
+    @Index(name = "idx_payroll_run_status", columnList = "status"),
+    @Index(name = "idx_payroll_run_period", columnList = "periodStart, periodEnd")
+})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -27,8 +35,8 @@ import lombok.Setter;
 public class PayrollRun {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long payrollRunId;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID payrollRunId;
 
     @NotNull
     @Column(nullable = false)
@@ -51,6 +59,7 @@ public class PayrollRun {
     @JoinColumn(name = "approved_by_user_id")
     private User approvedBy;
 
+    @Version
     @Builder.Default
     @Column(nullable = false)
     private Integer version = 1;
