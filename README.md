@@ -1,141 +1,56 @@
-# 💼 Payroll Processing System
+# Payroll Processing System
 
-A modern and scalable **Payroll Processing System** built with **Spring Boot**, designed to manage employees, departments, attendance, leave, salary processing, and payslip generation in an organized and secure way.
+A Spring Boot based Payroll Processing System.
 
----
+## Tech Stack
 
-## 🚀 Features
+- Java 17
+- Spring Boot
+- Spring Data JPA (Hibernate)
+- MySQL
+- Maven
+- Lombok
+- Jakarta Validation
 
-- 👨‍💼 Employee Management
-- 🏢 Department Management
-- 🔐 User & Role Management
-- 🕒 Attendance Tracking
-- 🌴 Leave Management
-- 💰 Salary Structure Management
-- 🧾 Tax Profile Handling
-- ⚙️ Payroll Processing
-- 📄 Payslip Generation
-- 💳 Payment Transactions
-- 📝 Audit Logging
+## Project Modules
 
----
+- Employee Management
+- Department Management
+- User & Role Management
+- Attendance Management
+- Leave Management
+- Salary Structure
+- Tax Profile
+- Payroll Processing
+- Payslip Generation
+- Payment Transactions
+- Audit Logging
 
-## 🛠️ Tech Stack
 
-| Technology | Description |
-|------------|-------------|
-| **Java 17** | Core programming language |
-| **Spring Boot** | Backend framework |
-| **Spring Data JPA (Hibernate)** | ORM & database operations |
-| **MySQL** | Relational database |
-| **Maven** | Build & dependency management |
-| **Lombok** | Reduces boilerplate code |
-| **Jakarta Validation** | Request validation |
+## Getting Started
 
----
-
-## 📂 Project Structure
-
-```text
-src/
- ├── controller/
- ├── service/
- ├── repository/
- ├── entity/
- ├── dto/
- ├── exception/
- └── config/
-```
-
----
-
-## ⚡ Getting Started
-
-### 1️⃣ Clone the Repository
+### Clone the repository
 
 ```bash
-git clone https://github.com/PiyushTechie/Payroll-Processing-System.git
+git clone <repository-url>
 ```
 
-### 2️⃣ Navigate to the Project
+### Open the project
 
-```bash
-cd Payroll-Processing-System
-```
+Import the project into IntelliJ IDEA, Eclipse, or VS Code.
 
-### 3️⃣ Configure Database
-
-Update your `application.properties` file:
-
-```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/payroll_db
-spring.datasource.username=root
-spring.datasource.password=your_password
-spring.jpa.hibernate.ddl-auto=update
-```
-
----
-
-## 🔨 Build the Project
+### Build
 
 ```bash
 mvn clean install
 ```
 
----
-
-## ▶️ Run the Application
+### Run
 
 ```bash
 mvn spring-boot:run
 ```
 
-The application will start at:
+## Documentation
 
-```text
-http://localhost:8080
-```
-
----
-
-## 📚 API Modules
-
-| Module | Status |
-|--------|--------|
-| Employee APIs | ✅ |
-| Department APIs | ✅ |
-| User & Role APIs | ✅ |
-| Attendance APIs | ⏳ |
-| Leave APIs | ⏳ |
-| Payroll APIs | ⏳ |
-| Payslip APIs | ⏳ |
-
----
-
-## 🔒 Validation & Security
-
-- Input validation using **Jakarta Validation**
-- Layered architecture for better maintainability
-- Ready for future integration with **Spring Security & JWT**
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome!  
 Please read **CONTRIBUTING.md** before making changes to the project.
-
----
-
-## 📌 Future Enhancements
-
-- JWT Authentication
-- Role-Based Access Control
-- Email Notifications
-- PDF Payslip Export
-- Docker Support
-- CI/CD Pipeline
-
-## ⭐ Support
-
-If you find this project useful, please give it a **star ⭐ on GitHub**.
