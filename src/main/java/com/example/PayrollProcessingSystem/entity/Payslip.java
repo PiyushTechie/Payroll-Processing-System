@@ -17,6 +17,7 @@ import lombok.Setter;
  * Represents a generated payslip document providing details of an employee's pay for a specific period.
  * Typically includes a reference to a downloadable PDF.
  */
+
 @Entity
 @Table(name = "payslips")
 @Getter

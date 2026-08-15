@@ -2,68 +2,76 @@ package com.example.PayrollProcessingSystem.entity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
-import com.example.PayrollProcessingSystem.enums.TransactionStatus;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Positive;
+import com.example.PayrollProcessingSystem.enums.TransactionStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/**
- * Represents a payment transaction made for a specific payroll record.
- * Tracks the status and details of bank transfers or other payment methods.
- */
 @Entity
-@Table(name = "payment_transactions", indexes = {
-        @Index(name = "idx_payment_batch", columnList = "batchId"),
-        @Index(name = "idx_payment_status", columnList = "status")
+@Table(name = "payment_transaction", indexes = {
+        @Index(name = "idx_payment_transaction_record", columnList = "payroll_record_id"),
+        @Index(name = "idx_payment_transaction_batch", columnList = "batch_id"),
+        @Index(name = "idx_payment_transaction_status", columnList = "status")
 })
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class PaymentTransaction {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID transactionId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long transactionId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "payroll_record_id", nullable = false)
     @JsonBackReference("payroll-record-payments")
     private PayrollRecord payrollRecord;
 
-    @Column(nullable = false)
+    @Column(name = "batch_id", length = 50)
     private String batchId;
 
     @NotNull
-    @PositiveOrZero
-    @Column(nullable = false, precision = 12, scale = 2)
+    @Column(name = "payment_method", nullable = false, length = 30)
+    private String paymentMethod;
+
+    @NotNull
+    @Positive
+    @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal amount;
 
-    @Setter
     @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 20)
     private TransactionStatus status;
 
-    @NotNull
-    @Column(nullable = false)
+    @Column(name = "transaction_date")
     private LocalDateTime transactionDate;
 
-    @Setter
+    @Column(name = "bank_reference_number", length = 100)
     private String bankReferenceNumber;
 
-    @Setter
     @Builder.Default
-    @PositiveOrZero
-    @Column(nullable = false)
+    @Column(name = "retry_count", nullable = false)
     private Integer retryCount = 0;
 }

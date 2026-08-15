@@ -3,33 +3,47 @@ package com.example.PayrollProcessingSystem.entity;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import com.example.PayrollProcessingSystem.enums.PaymentStatus;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/**
- * Represents the payroll details for a specific employee in a specific payroll
- * run.
- * Contains aggregated totals for gross salary, deductions, and net salary.
- */
 @Entity
-@Table(name = "payroll_records", uniqueConstraints = {
+@Table(
+    name = "payroll_record",
+    uniqueConstraints = {
         @UniqueConstraint(name = "uk_payroll_record_run_employee", columnNames = { "payroll_run_id", "employee_id" })
-}, indexes = {
+    },
+    indexes = {
         @Index(name = "idx_payroll_record_employee", columnList = "employee_id"),
-        @Index(name = "idx_payroll_record_status", columnList = "paymentStatus")
-})
+        @Index(name = "idx_payroll_record_status", columnList = "payment_status")
+    }
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -38,12 +52,12 @@ import lombok.Setter;
 public class PayrollRecord {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID payrollRecordId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long payrollRecordId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "payroll_run_id", nullable = false)
-    @JsonBackReference
+    @JsonBackReference("run-records")
     private PayrollRun payrollRun;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -52,22 +66,22 @@ public class PayrollRecord {
 
     @NotNull
     @PositiveOrZero
-    @Column(nullable = false, precision = 15, scale = 2)
+    @Column(name = "gross_salary", nullable = false, precision = 15, scale = 2)
     private BigDecimal grossSalary;
 
     @NotNull
     @PositiveOrZero
-    @Column(nullable = false, precision = 15, scale = 2)
+    @Column(name = "total_deductions", nullable = false, precision = 15, scale = 2)
     private BigDecimal totalDeductions;
 
     @NotNull
     @PositiveOrZero
-    @Column(nullable = false, precision = 15, scale = 2)
+    @Column(name = "net_salary", nullable = false, precision = 15, scale = 2)
     private BigDecimal netSalary;
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(name = "payment_status", nullable = false, length = 20)
     private PaymentStatus paymentStatus;
 
     @Builder.Default
@@ -75,7 +89,7 @@ public class PayrollRecord {
     @JsonManagedReference("payroll-record-items")
     private List<PayrollItem> payrollItems = new ArrayList<>();
 
-    @OneToOne(mappedBy = "payrollRecord", fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "payrollRecord", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonManagedReference("payroll-record-payslip")
     private Payslip payslip;
 
@@ -84,6 +98,7 @@ public class PayrollRecord {
     @JsonManagedReference("payroll-record-payments")
     private List<PaymentTransaction> paymentTransactions = new ArrayList<>();
 
+    // Helper methods for bi-directional consistency
     public void addPayrollItem(PayrollItem payrollItem) {
         payrollItems.add(payrollItem);
         payrollItem.setPayrollRecord(this);
@@ -96,15 +111,12 @@ public class PayrollRecord {
 
     public void setPayslip(Payslip payslip) {
         this.payslip = payslip;
-
         if (payslip != null) {
             payslip.setPayrollRecord(this);
         }
     }
 
-    public void addPaymentTransaction(
-            PaymentTransaction paymentTransaction) {
-
+    public void addPaymentTransaction(PaymentTransaction paymentTransaction) {
         paymentTransactions.add(paymentTransaction);
         paymentTransaction.setPayrollRecord(this);
     }

@@ -20,6 +20,7 @@ import lombok.Setter;
  * Represents an individual component of an employee's payroll,
  * such as basic salary, allowances, or deductions.
  */
+
 @Entity
 @Table(name = "payroll_items")
 @Getter
