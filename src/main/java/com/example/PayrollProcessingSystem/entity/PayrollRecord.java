@@ -33,17 +33,20 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * Represents an individual employee's payroll calculation record within a
+ * specific
+ * payroll run.
+ * Contains all earnings, deductions, and net pay details for one employee.
+ */
+
 @Entity
-@Table(
-    name = "payroll_record",
-    uniqueConstraints = {
+@Table(name = "payroll_record", uniqueConstraints = {
         @UniqueConstraint(name = "uk_payroll_record_run_employee", columnNames = { "payroll_run_id", "employee_id" })
-    },
-    indexes = {
+}, indexes = {
         @Index(name = "idx_payroll_record_employee", columnList = "employee_id"),
         @Index(name = "idx_payroll_record_status", columnList = "payment_status")
-    }
-)
+})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -62,6 +65,7 @@ public class PayrollRecord {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "employee_id", nullable = false)
+    @JsonBackReference("employee-payroll-records")
     private Employee employee;
 
     @NotNull
@@ -79,10 +83,11 @@ public class PayrollRecord {
     @Column(name = "net_salary", nullable = false, precision = 15, scale = 2)
     private BigDecimal netSalary;
 
+    @Builder.Default
     @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_status", nullable = false, length = 20)
-    private PaymentStatus paymentStatus;
+    private PaymentStatus paymentStatus = PaymentStatus.PENDING;
 
     @Builder.Default
     @OneToMany(mappedBy = "payrollRecord", cascade = CascadeType.ALL, orphanRemoval = true)

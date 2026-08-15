@@ -34,7 +34,7 @@ public class Department {
 
     @NotBlank
     @Column(nullable = false, unique = true, length = 100)
-    private String name;
+    private String departmentName;
 
     @Column(length = 255)
     private String description;

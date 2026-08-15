@@ -26,6 +26,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * 
+ * Represents a single payment transaction record for an employee.
+ * Tracks individual payment attempts, statuses, and bank references.
+ * 
+ */
+
 @Entity
 @Table(name = "payment_transaction", indexes = {
         @Index(name = "idx_payment_transaction_record", columnList = "payroll_record_id"),

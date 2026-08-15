@@ -21,6 +21,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * 
+ * Represents an audit log entry tracking changes made to entities.
+ * Captures before/after states, user who made the change, and timestamp.
+ * 
+ */
+
 @Entity
 @Table(name = "audit_log")
 @Getter

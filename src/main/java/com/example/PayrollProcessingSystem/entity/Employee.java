@@ -28,6 +28,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * Represents an employee record containing personal and employment details.
+ * Core employee information including personal data, department, manager,
+ * contact details, and employment terms.
+ */
+
 @Entity
 @Table(
     name = "employee",
