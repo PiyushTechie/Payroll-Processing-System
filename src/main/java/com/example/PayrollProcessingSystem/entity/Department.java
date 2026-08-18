@@ -19,7 +19,7 @@ import lombok.Setter;
  */
 @Entity
 @Table(name = "departments", indexes = {
-        @Index(name = "idx_department_name", columnList = "name")
+        @Index(name = "idx_department_name", columnList = "departmentName")
 })
 @Getter
 @Setter
