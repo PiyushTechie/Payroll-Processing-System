@@ -5,7 +5,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.example.PayrollProcessingSystem.enums.PayrollRunStatus;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
@@ -48,6 +47,14 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class PayrollRun {
+
+    public enum PayrollRunStatus {
+        GENERATED,
+        HR_APPROVED,
+        FINANCE_APPROVED,
+        PAID,
+        FAILED
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

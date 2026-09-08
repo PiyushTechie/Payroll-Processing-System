@@ -16,7 +16,6 @@ import jakarta.persistence.Transient;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import com.example.PayrollProcessingSystem.enums.LeaveType;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 
@@ -37,6 +36,7 @@ import lombok.Setter;
 }, indexes = {
                 @Index(name = "idx_leave_balance_employee", columnList = "employee_id")
 })
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -56,7 +56,7 @@ public class LeaveBalance {
         @NotNull
         @Enumerated(EnumType.STRING)
         @Column(name = "leave_type", nullable = false, length = 30)
-        private LeaveType leaveType;
+        private LeaveRequest.LeaveType leaveType;
 
         @NotNull
         @Min(0)

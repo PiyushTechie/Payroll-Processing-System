@@ -19,7 +19,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-import com.example.PayrollProcessingSystem.enums.TransactionStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -27,24 +26,32 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * 
  * Represents a single payment transaction record for an employee.
  * Tracks individual payment attempts, statuses, and bank references.
- * 
  */
 
 @Entity
 @Table(name = "payment_transaction", indexes = {
         @Index(name = "idx_payment_transaction_record", columnList = "payroll_record_id"),
         @Index(name = "idx_payment_transaction_batch", columnList = "batch_id"),
-        @Index(name = "idx_payment_transaction_status", columnList = "status")
+        @Index(name = "idx_payment_transaction_status", columnList = "status"),
+        @Index(name = "idx_payment_transaction_employee", columnList = "employee_id")
 })
+
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class PaymentTransaction {
+
+    public enum TransactionStatus {
+        PENDING,
+        PROCESSING,
+        SUCCESS,
+        FAILED,
+        REVERSED
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -54,6 +61,11 @@ public class PaymentTransaction {
     @JoinColumn(name = "payroll_record_id", nullable = false)
     @JsonBackReference("payroll-record-payments")
     private PayrollRecord payrollRecord;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "employee_id", nullable = false)
+    @JsonBackReference("employee-payments")
+    private Employee employee;
 
     @Column(name = "batch_id", length = 50)
     private String batchId;

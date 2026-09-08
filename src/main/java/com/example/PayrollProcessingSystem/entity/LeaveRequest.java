@@ -4,7 +4,6 @@ import java.time.LocalDate;
 
 import org.hibernate.annotations.CreationTimestamp;
 
-import com.example.PayrollProcessingSystem.enums.LeaveType;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.Column;
@@ -21,13 +20,11 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import com.example.PayrollProcessingSystem.enums.LeaveRequestStatus;
 
 /**
  * Represents an employee's leave request for time off.
@@ -46,6 +43,22 @@ import com.example.PayrollProcessingSystem.enums.LeaveRequestStatus;
 @AllArgsConstructor
 @Builder
 public class LeaveRequest {
+
+        public enum LeaveType {
+                SICK,
+                CASUAL,
+                ANNUAL,
+                MATERNITY,
+                PATERNITY,
+                UNPAID
+        }
+
+        public enum LeaveRequestStatus {
+                PENDING,
+                APPROVED,
+                REJECTED,
+                CANCELLED
+        }
 
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)

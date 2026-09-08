@@ -1,6 +1,6 @@
 package com.example.PayrollProcessingSystem.entity;
 
-import com.example.PayrollProcessingSystem.enums.ComponentCategory;
+import java.math.BigDecimal;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,6 +11,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -19,12 +21,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-/**
- * Represents a standard payroll component (earning or deduction)
- * that can be assigned to employees.
- * Defines system-wide payroll components like salary, bonus, tax, etc.
- */
 
 @Entity
 @Table(name = "payroll_component", uniqueConstraints = {
@@ -36,6 +32,17 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class PayrollComponent {
+
+    public enum ComponentCategory {
+        EARNING,
+        DEDUCTION,
+        TAX
+    }
+
+    public enum ComponentType {
+        FLAT_AMOUNT,
+        PERCENTAGE
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -49,6 +56,17 @@ public class PayrollComponent {
     @Enumerated(EnumType.STRING)
     @Column(name = "category", nullable = false, length = 20)
     private ComponentCategory category;
+
+    @Builder.Default
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type", nullable = false, length = 20)
+    private ComponentType type = ComponentType.FLAT_AMOUNT;
+
+    @DecimalMin(value = "0.00", message = "Percentage cannot be negative")
+    @DecimalMax(value = "100.00", message = "Percentage cannot exceed 100")
+    @Column(name = "percentage_value", precision = 5, scale = 2)
+    private BigDecimal percentageValue;
 
     @Builder.Default
     @Column(name = "is_taxable", nullable = false)

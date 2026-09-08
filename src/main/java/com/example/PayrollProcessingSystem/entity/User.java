@@ -1,7 +1,5 @@
 package com.example.PayrollProcessingSystem.entity;
 
-import com.example.PayrollProcessingSystem.enums.Role;
-import com.example.PayrollProcessingSystem.enums.UserStatus;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -48,6 +46,19 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class User {
+
+        public enum Role {
+                ADMIN,
+                HR,
+                FINANCE,
+                EMPLOYEE
+        }
+
+        public enum UserStatus {
+                ACTIVE,
+                INACTIVE,
+                LOCKED
+        }
 
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)

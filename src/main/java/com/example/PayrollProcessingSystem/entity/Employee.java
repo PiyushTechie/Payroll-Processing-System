@@ -2,8 +2,6 @@ package com.example.PayrollProcessingSystem.entity;
 
 import java.time.LocalDate;
 
-import com.example.PayrollProcessingSystem.enums.EmployeeStatus;
-import com.example.PayrollProcessingSystem.enums.EmploymentType;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.Column;
@@ -54,6 +52,21 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class Employee {
+
+    public enum EmployeeStatus {
+        ACTIVE,
+        INACTIVE,
+        ON_LEAVE,
+        TERMINATED,
+        RESIGNED
+    }
+
+    public enum EmploymentType {
+        FULL_TIME,
+        PART_TIME,
+        CONTRACT,
+        INTERN
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

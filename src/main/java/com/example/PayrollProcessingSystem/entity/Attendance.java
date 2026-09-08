@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-import com.example.PayrollProcessingSystem.enums.AttendanceStatus;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.Column;
@@ -22,7 +21,6 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -50,6 +48,15 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class Attendance {
+
+        public enum AttendanceStatus {
+                PRESENT,
+                ABSENT,
+                HALF_DAY,
+                ON_LEAVE,
+                HOLIDAY,
+                WEEKEND
+        }
 
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)

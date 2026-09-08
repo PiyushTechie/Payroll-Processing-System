@@ -2,8 +2,6 @@ package com.example.PayrollProcessingSystem.entity;
 
 import java.math.BigDecimal;
 
-import com.example.PayrollProcessingSystem.enums.ComponentCategory;
-import com.example.PayrollProcessingSystem.enums.ComponentName;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.Column;
@@ -44,6 +42,18 @@ import lombok.Setter;
 @Builder
 public class PayrollItem {
 
+    public enum ComponentName {
+        BASIC,
+        HRA,
+        DA,
+        SPECIAL_ALLOWANCE,
+        BONUS,
+        OVERTIME,
+        PF,
+        PROFESSIONAL_TAX,
+        INCOME_TAX
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long payrollItemId;
@@ -61,7 +71,7 @@ public class PayrollItem {
     @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "component_category", nullable = false, length = 20)
-    private ComponentCategory componentCategory;
+    private PayrollComponent.ComponentCategory componentCategory;
 
     @NotNull
     @PositiveOrZero

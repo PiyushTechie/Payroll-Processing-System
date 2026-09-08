@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.example.PayrollProcessingSystem.enums.PaymentStatus;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
@@ -24,6 +23,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 
@@ -32,13 +32,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-/**
- * Represents an individual employee's payroll calculation record within a
- * specific
- * payroll run.
- * Contains all earnings, deductions, and net pay details for one employee.
- */
 
 @Entity
 @Table(name = "payroll_record", uniqueConstraints = {
@@ -54,6 +47,13 @@ import lombok.Setter;
 @Builder
 public class PayrollRecord {
 
+    public enum PaymentStatus {
+        PENDING,
+        PROCESSING,
+        PAID,
+        FAILED
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long payrollRecordId;
@@ -67,6 +67,21 @@ public class PayrollRecord {
     @JoinColumn(name = "employee_id", nullable = false)
     @JsonBackReference("employee-payroll-records")
     private Employee employee;
+
+    @NotNull
+    @Min(1)
+    @Column(name = "total_days", nullable = false)
+    private Integer totalDays;
+
+    @NotNull
+    @Min(0)
+    @Column(name = "payable_days", nullable = false)
+    private Integer payableDays;
+
+    @NotNull
+    @Min(0)
+    @Column(name = "lop_days", nullable = false)
+    private Integer lopDays;
 
     @NotNull
     @PositiveOrZero
@@ -94,7 +109,7 @@ public class PayrollRecord {
     @JsonManagedReference("payroll-record-items")
     private List<PayrollItem> payrollItems = new ArrayList<>();
 
-    @OneToOne(mappedBy = "payrollRecord", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "payrollRecord", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JsonManagedReference("payroll-record-payslip")
     private Payslip payslip;
 
@@ -103,7 +118,6 @@ public class PayrollRecord {
     @JsonManagedReference("payroll-record-payments")
     private List<PaymentTransaction> paymentTransactions = new ArrayList<>();
 
-    // Helper methods for bi-directional consistency
     public void addPayrollItem(PayrollItem payrollItem) {
         payrollItems.add(payrollItem);
         payrollItem.setPayrollRecord(this);

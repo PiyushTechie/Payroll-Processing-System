@@ -69,12 +69,9 @@ Fixed stuff
 ```
 entity
 repository
-service
 controller
-dto
-config
+response
 exception
-enums
 ```
 
 Do not create unnecessary packages.
@@ -103,11 +100,9 @@ private BigDecimal amount;
 
 # Enum Guidelines
 
-All enums must be placed inside
-
-```
-enums
-```
+Enums must be nested inside the entity that owns their domain concept.
+Shared enums should have one canonical owning entity and be referenced from
+other entities through that nested type.
 
 Do not use String values for statuses.
 
