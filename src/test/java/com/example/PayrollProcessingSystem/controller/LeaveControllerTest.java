@@ -51,9 +51,6 @@ class LeaveControllerTest {
     private LeaveController leaveController;
 
     @Autowired
-    private LeaveRequestRepository leaveRequestRepository;
-
-    @Autowired
     private LeaveBalanceRepository leaveBalanceRepository;
 
     @Autowired
