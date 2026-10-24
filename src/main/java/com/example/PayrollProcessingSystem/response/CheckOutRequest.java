@@ -18,6 +18,7 @@ import lombok.Setter;
 public class CheckOutRequest {
 
     @NotNull(message = "Employee ID is required")
+    @jakarta.validation.constraints.Positive(message = "Employee ID must be a positive number")
     private Long employeeId;
 
     private LocalDate attendanceDate;

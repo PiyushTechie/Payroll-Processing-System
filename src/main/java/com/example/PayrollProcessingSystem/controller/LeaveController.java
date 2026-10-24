@@ -71,6 +71,11 @@ public class LeaveController {
         Employee employee = employeeRepository.findById(payload.getEmployeeId())
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found with ID: " + payload.getEmployeeId()));
 
+        LocalDate today = LocalDate.now();
+        if (payload.getStartDate().isBefore(today)) {
+            throw new BadRequestException("Cannot apply for leave on past dates. Leave start date must be today (" + today + ") or in the future.");
+        }
+
         if (payload.getStartDate().isAfter(payload.getEndDate())) {
             throw new BadRequestException("Leave start date cannot be after end date.");
         }
@@ -261,7 +266,7 @@ public class LeaveController {
     /**
      * Get all leave balances for an employee.
      */
-    @GetMapping("/balance/employee/{employeeId}")
+    @GetMapping({"/balance/employee/{employeeId}", "/balances/{employeeId}"})
     public ResponseEntity<List<LeaveBalanceResponsePayload>> getEmployeeLeaveBalances(@PathVariable Long employeeId) {
         if (!employeeRepository.existsById(employeeId)) {
             throw new ResourceNotFoundException("Employee not found with ID: " + employeeId);

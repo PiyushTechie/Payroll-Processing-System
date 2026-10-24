@@ -68,8 +68,8 @@ public class LeaveRequestController {
         // Validate dates
         if (leaveRequest.getStartDate() == null ||
                 leaveRequest.getEndDate() == null ||
-                leaveRequest.getEndDate()
-                        .isBefore(leaveRequest.getStartDate())) {
+                leaveRequest.getEndDate().isBefore(leaveRequest.getStartDate()) ||
+                leaveRequest.getStartDate().isBefore(LocalDate.now())) {
 
             return ResponseEntity.badRequest().build();
         }

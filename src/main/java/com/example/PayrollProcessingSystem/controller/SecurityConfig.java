@@ -47,6 +47,9 @@ public class SecurityConfig {
                 .authenticationEntryPoint((request, response, authException) -> {
                     response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
                 })
+                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN, "Forbidden: Access Denied");
+                })
             )
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/public/**").permitAll()
@@ -62,7 +65,7 @@ public class SecurityConfig {
                 .failureHandler((request, response, exception) -> {
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.setContentType("application/json");
-                    response.getWriter().write("{\"message\": \"Login failed\"}");
+                    response.getWriter().write("{\"message\": \"username or password is incorrect\"}");
                 })
                 .permitAll()
             )
@@ -78,9 +81,18 @@ public class SecurityConfig {
                 .permitAll()
             );
             
+        http.authenticationProvider(authenticationProvider());
+            
         return http.build();
     }
     
+    @Bean
+    public DaoAuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
+        authProvider.setPasswordEncoder(passwordEncoder());
+        return authProvider;
+    }
+
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
@@ -91,3 +103,4 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 }
+

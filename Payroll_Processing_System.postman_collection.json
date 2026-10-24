@@ -1,0 +1,1266 @@
+{
+	"info": {
+		"_postman_id": "b3e94a82-f5a1-4d1a-96c2-421b8c0a5e89",
+		"name": "Payroll Processing System API",
+		"description": "Complete collection of APIs for Payroll Processing System including Authentication, Demo Payroll Processing flow, Employees, Attendance, Leaves, and Departments.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "xsrf_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "runId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "recordId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "employeeId",
+			"value": "1",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "1. Authentication",
+			"item": [
+				{
+					"name": "Login (Admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let xsrfCookie = pm.cookies.get('XSRF-TOKEN');",
+									"if (xsrfCookie) {",
+									"    pm.collectionVariables.set('xsrf_token', xsrfCookie);",
+									"    console.log('Captured XSRF-TOKEN:', xsrfCookie);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "username",
+									"value": "admin",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "password123",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"login"
+							]
+						},
+						"description": "Logs in with the default admin account and automatically stores the XSRF token for subsequent requests."
+					},
+					"response": []
+				},
+				{
+					"name": "Login (HR)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let xsrfCookie = pm.cookies.get('XSRF-TOKEN');",
+									"if (xsrfCookie) {",
+									"    pm.collectionVariables.set('xsrf_token', xsrfCookie);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "username",
+									"value": "hr_user",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "password123",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login (Finance)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let xsrfCookie = pm.cookies.get('XSRF-TOKEN');",
+									"if (xsrfCookie) {",
+									"    pm.collectionVariables.set('xsrf_token', xsrfCookie);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "username",
+									"value": "finance_user",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "password123",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-XSRF-TOKEN",
+								"value": "{{xsrf_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/logout",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"logout"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2. Demo Payroll Processing",
+			"item": [
+				{
+					"name": "Step 1: Generate Payroll (Draft Run)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    let data = pm.response.json();",
+									"    if (data.payrollRunId) {",
+									"        pm.collectionVariables.set('runId', data.payrollRunId);",
+									"        console.log('Set runId to:', data.payrollRunId);",
+									"    }",
+									"    if (data.records && data.records.length > 0) {",
+									"        pm.collectionVariables.set('recordId', data.records[0].payrollRecordId);",
+									"        console.log('Set recordId to:', data.records[0].payrollRecordId);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-XSRF-TOKEN",
+								"value": "{{xsrf_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/payroll/generate?year=2026&month=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"payroll",
+								"generate"
+							],
+							"query": [
+								{
+									"key": "year",
+									"value": "2026"
+								},
+								{
+									"key": "month",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Calculates gross salary, deductions, and net salary for all active employees and creates a draft payroll run (Status: GENERATED). Automatically saves `runId` and `recordId` into collection variables."
+					},
+					"response": []
+				},
+				{
+					"name": "Step 2: Approve Payroll (Finance)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-XSRF-TOKEN",
+								"value": "{{xsrf_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/payroll/{{runId}}/approve",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"payroll",
+								"{{runId}}",
+								"approve"
+							]
+						},
+						"description": "Finance reviews and approves the draft payroll run (Status becomes: FINANCE_APPROVED)."
+					},
+					"response": []
+				},
+				{
+					"name": "Step 3: Execute Demo Payout (Direct Deposit)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-XSRF-TOKEN",
+								"value": "{{xsrf_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/payroll/{{runId}}/payout",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"payroll",
+								"{{runId}}",
+								"payout"
+							]
+						},
+						"description": "Executes simulated direct bank deposit payout using employee IFSC and bank accounts. Generates mock UTR reference IDs, PaymentTransaction records, itemized Payslips, and marks run as PAID."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Payroll Run Details",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/payroll/{{runId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"payroll",
+								"{{runId}}"
+							]
+						},
+						"description": "Retrieves the complete payroll run details, employee list, and payment statuses."
+					},
+					"response": []
+				},
+				{
+					"name": "List All Payroll Runs",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/payroll/runs",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"payroll",
+								"runs"
+							]
+						},
+						"description": "Retrieves all payroll runs in the system."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Run Payment Transactions (Audit Trail)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/payroll/{{runId}}/transactions",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"payroll",
+								"{{runId}}",
+								"transactions"
+							]
+						},
+						"description": "Lists all PaymentTransaction records created during payout with simulated bank reference UTRs."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Employee Payslip",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/payroll/payslips/{{recordId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"payroll",
+								"payslips",
+								"{{recordId}}"
+							]
+						},
+						"description": "Retrieves the detailed payslip for an employee record with itemized earnings, deductions, and bank reference number."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "3. Employees",
+			"item": [
+				{
+					"name": "Get All Employees",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/employees",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"employees"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Employee by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/employees/{{employeeId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"employees",
+								"{{employeeId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search Employee by Email",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/employees/search?email=aditi.sharma1@example.com",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"employees",
+								"search"
+							],
+							"query": [
+								{
+									"key": "email",
+									"value": "aditi.sharma1@example.com"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Employee",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-XSRF-TOKEN",
+								"value": "{{xsrf_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"employeeCode\": \"EMP0101\",\n    \"department\": {\n        \"departmentId\": 1\n    },\n    \"firstName\": \"Vikram\",\n    \"lastName\": \"Malhotra\",\n    \"email\": \"vikram.malhotra@example.com\",\n    \"phone\": \"+919876543210\",\n    \"designation\": \"Software Engineer\",\n    \"employmentType\": \"FULL_TIME\",\n    \"dateOfJoining\": \"2024-01-15\",\n    \"status\": \"ACTIVE\",\n    \"bankAccountNumber\": \"1234567890\",\n    \"ifscCode\": \"SBIN0001234\",\n    \"accountHolderName\": \"Vikram Malhotra\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/employees",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"employees"
+							]
+						},
+						"description": "Creates a new employee record with personal, department, and banking details."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Employee",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-XSRF-TOKEN",
+								"value": "{{xsrf_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstName\": \"Aditi\",\n    \"lastName\": \"Sharma\",\n    \"email\": \"aditi.sharma1@example.com\",\n    \"phone\": \"+916337566678\",\n    \"designation\": \"Senior Executive\",\n    \"employmentType\": \"FULL_TIME\",\n    \"status\": \"ACTIVE\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/employees/{{employeeId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"employees",
+								"{{employeeId}}"
+							]
+						},
+						"description": "Updates an existing employee's details."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Employee",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-XSRF-TOKEN",
+								"value": "{{xsrf_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/employees/{{employeeId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"employees",
+								"{{employeeId}}"
+							]
+						},
+						"description": "Deletes an employee record by ID."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "4. Attendance",
+			"item": [
+				{
+					"name": "Check In",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-XSRF-TOKEN",
+								"value": "{{xsrf_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"employeeId\": 1,\n    \"attendanceDate\": \"2026-10-17\",\n    \"checkInTime\": \"09:00:00\",\n    \"remarks\": \"On time\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/attendance/check-in",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"attendance",
+								"check-in"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Check Out",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-XSRF-TOKEN",
+								"value": "{{xsrf_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"employeeId\": 1,\n    \"attendanceDate\": \"2026-10-17\",\n    \"checkOutTime\": \"18:00:00\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/attendance/check-out",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"attendance",
+								"check-out"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Monthly Attendance Summary",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/attendance/summary/1?year=2026&month=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"attendance",
+								"summary",
+								"1"
+							],
+							"query": [
+								{
+									"key": "year",
+									"value": "2026"
+								},
+								{
+									"key": "month",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Record Attendance (HR/Admin)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-XSRF-TOKEN",
+								"value": "{{xsrf_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"employeeId\": 1,\n    \"attendanceDate\": \"2026-10-23\",\n    \"status\": \"PRESENT\",\n    \"checkIn\": \"09:00:00\",\n    \"checkOut\": \"17:00:00\",\n    \"workingHours\": 8.00,\n    \"overtimeHours\": 0.00,\n    \"remarks\": \"Manual HR entry\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/attendance/record",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"attendance",
+								"record"
+							]
+						},
+						"description": "Manual attendance entry or override restricted to HR and Admin roles. Can set any status (PRESENT, HALF_DAY, ABSENT, HOLIDAY, WEEKEND, ON_LEAVE) for any date."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "5. Leaves",
+			"item": [
+				{
+					"name": "Apply for Leave",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-XSRF-TOKEN",
+								"value": "{{xsrf_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"employeeId\": 1,\n    \"leaveType\": \"CASUAL\",\n    \"startDate\": \"2026-11-02\",\n    \"endDate\": \"2026-11-03\",\n    \"reason\": \"Personal family event\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/leaves/apply",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"leaves",
+								"apply"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Review Leave Request (HR/Admin)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-XSRF-TOKEN",
+								"value": "{{xsrf_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"leaveRequestId\": 1,\n    \"newStatus\": \"APPROVED\",\n    \"remarks\": \"Approved by HR\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/leaves/review",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"leaves",
+								"review"
+							]
+						},
+						"description": "Reviews (Approves or Rejects) a pending leave request. Requires HR or Admin session. Automatically deducts leave balance and syncs ON_LEAVE attendance."
+					},
+					"response": []
+				},
+				{
+					"name": "Cancel Leave Request",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-XSRF-TOKEN",
+								"value": "{{xsrf_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/leaves/1/cancel",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"leaves",
+								"1",
+								"cancel"
+							]
+						},
+						"description": "Cancels a leave request. If previously approved, restores deducted leave balance and clears ON_LEAVE attendance."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Pending Leave Requests (HR/Admin)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/leaves/pending",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"leaves",
+								"pending"
+							]
+						},
+						"description": "Lists all leave requests in PENDING status awaiting review."
+					},
+					"response": []
+				},
+				{
+					"name": "Allocate Leave Balance (HR/Admin)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-XSRF-TOKEN",
+								"value": "{{xsrf_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"employeeId\": 1,\n    \"leaveType\": \"CASUAL\",\n    \"totalLeaves\": 18\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/leaves/balance/allocate",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"leaves",
+								"balance",
+								"allocate"
+							]
+						},
+						"description": "Allocates or updates total leave balance for an employee. Restricted to HR and Admin."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Leave Balances",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/leaves/balances/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"leaves",
+								"balances",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Employee Leaves",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/leaves/employee/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"leaves",
+								"employee",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "6. Departments",
+			"item": [
+				{
+					"name": "Get All Departments",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/departments",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"departments"
+							]
+						},
+						"description": "Lists all departments."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Department by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/departments/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"departments",
+								"1"
+							]
+						},
+						"description": "Retrieves department details by primary key ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Search Department by Name",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/departments/search?name=Engineering",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"departments",
+								"search"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "Engineering"
+								}
+							]
+						},
+						"description": "Searches for a department by its exact departmentName."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Department",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-XSRF-TOKEN",
+								"value": "{{xsrf_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"departmentName\": \"Research & Development\",\n    \"description\": \"R&D Department\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/departments",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"departments"
+							]
+						},
+						"description": "Creates a new department record."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Department",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-XSRF-TOKEN",
+								"value": "{{xsrf_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"departmentName\": \"Human Resources\",\n    \"description\": \"HR and Talent Management\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/departments/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"departments",
+								"1"
+							]
+						},
+						"description": "Updates department details by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Department",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-XSRF-TOKEN",
+								"value": "{{xsrf_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/departments/6",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"departments",
+								"6"
+							]
+						},
+						"description": "Deletes a department by ID."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "7. Users",
+			"item": [
+				{
+					"name": "Get All Users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users"
+							]
+						},
+						"description": "Lists all user credentials and linked employee accounts."
+					},
+					"response": []
+				},
+				{
+					"name": "Get User by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/users/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"1"
+							]
+						},
+						"description": "Retrieves user record by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Search User by Username",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/users/search?username=admin",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"search"
+							],
+							"query": [
+								{
+									"key": "username",
+									"value": "admin"
+								}
+							]
+						},
+						"description": "Finds user account by unique username."
+					},
+					"response": []
+				},
+				{
+					"name": "Create User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-XSRF-TOKEN",
+								"value": "{{xsrf_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"demo_hr_user\",\n    \"password\": \"password123\",\n    \"role\": \"HR\",\n    \"status\": \"ACTIVE\",\n    \"employee\": {\n        \"employeeId\": 10\n    }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users"
+							]
+						},
+						"description": "Creates a new user account linked to an unlinked employee record. Plain-text password is automatically hashed with BCrypt behind the scenes."
+					},
+					"response": []
+				},
+				{
+					"name": "Update User",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-XSRF-TOKEN",
+								"value": "{{xsrf_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"admin\",\n    \"role\": \"ADMIN\",\n    \"status\": \"ACTIVE\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/users/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"1"
+							]
+						},
+						"description": "Updates username, role, or status for a user ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Lock User Account (Admin Only)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "X-XSRF-TOKEN",
+								"value": "{{xsrf_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/users/102/lock",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"102",
+								"lock"
+							]
+						},
+						"description": "Locks a user account so they can no longer log in. Restricted strictly to ROLE_ADMIN."
+					},
+					"response": []
+				},
+				{
+					"name": "Unlock User Account (Admin Only)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "X-XSRF-TOKEN",
+								"value": "{{xsrf_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/users/102/unlock",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"102",
+								"unlock"
+							]
+						},
+						"description": "Unlocks a locked user account (sets status back to ACTIVE). Restricted strictly to ROLE_ADMIN."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete User",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-XSRF-TOKEN",
+								"value": "{{xsrf_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/users/100",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"100"
+							]
+						},
+						"description": "Deletes a user record by ID. Restricted strictly to ROLE_ADMIN."
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

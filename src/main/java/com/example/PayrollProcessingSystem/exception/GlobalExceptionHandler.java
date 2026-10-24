@@ -84,7 +84,113 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
-    // 5. Fallback for unhandled internal server exceptions (500)
+    // 5. Handle JSON parsing and malformed input (e.g. empty strings for enums, bad types)
+    @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(
+            org.springframework.http.converter.HttpMessageNotReadableException ex, HttpServletRequest request) {
+
+        String userFriendlyMessage = "Invalid input format in request body.";
+        Throwable cause = ex.getCause();
+
+        if (cause instanceof com.fasterxml.jackson.databind.exc.InvalidFormatException ife) {
+            String field = ife.getPath().stream()
+                    .map(com.fasterxml.jackson.databind.JsonMappingException.Reference::getFieldName)
+                    .filter(java.util.Objects::nonNull)
+                    .findFirst().orElse("field");
+            Class<?> targetType = ife.getTargetType();
+            if (targetType != null && targetType.isEnum()) {
+                String allowed = java.util.Arrays.toString(targetType.getEnumConstants());
+                userFriendlyMessage = String.format("Invalid value '%s' for enum field '%s'. Allowed values are: %s. (Omit the field if you don't wish to change it).",
+                        ife.getValue(), field, allowed);
+            } else {
+                String typeName = targetType != null ? targetType.getSimpleName() : "valid format";
+                userFriendlyMessage = String.format("Invalid value '%s' for field '%s'. Expected a valid %s.",
+                        ife.getValue(), field, typeName);
+            }
+        } else if (cause instanceof com.fasterxml.jackson.databind.JsonMappingException jme) {
+            String field = jme.getPath().stream()
+                    .map(com.fasterxml.jackson.databind.JsonMappingException.Reference::getFieldName)
+                    .filter(java.util.Objects::nonNull)
+                    .findFirst().orElse("field");
+            userFriendlyMessage = String.format("Invalid or malformed value for field '%s'.", field);
+        } else if (ex.getMessage() != null && ex.getMessage().contains("Cannot coerce empty String")) {
+            userFriendlyMessage = "Empty string \"\" is not allowed for enum or numeric fields. Please omit the field or supply a valid value.";
+        }
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                userFriendlyMessage,
+                LocalDateTime.now()
+        );
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    // 6. Handle PathVariable / Query Param type mismatches (e.g. /summary/abc or /summary/!@#)
+    @ExceptionHandler(org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatchException(
+            org.springframework.web.method.annotation.MethodArgumentTypeMismatchException ex, HttpServletRequest request) {
+
+        String paramName = ex.getName();
+        String expectedType = ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "valid format";
+        String message = String.format("Parameter '%s' received invalid value '%s'. Expected type is %s.",
+                paramName, ex.getValue(), expectedType);
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                message,
+                LocalDateTime.now()
+        );
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    // 7. Handle Access Denied / RBAC Authorization Failures (403 Forbidden)
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDeniedException(
+            org.springframework.security.access.AccessDeniedException ex, HttpServletRequest request) {
+
+        String message = (ex.getMessage() != null && !ex.getMessage().isBlank() && !ex.getMessage().equalsIgnoreCase("Access Denied"))
+                ? ex.getMessage()
+                : "Access Denied: You do not have the required permissions to perform this action.";
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.FORBIDDEN.value(),
+                HttpStatus.FORBIDDEN.getReasonPhrase(),
+                message,
+                LocalDateTime.now()
+        );
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
+    }
+
+    // 8. Handle Database Constraint / Unique Key Violations (400 Bad Request)
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> handleDataIntegrityViolationException(
+            org.springframework.dao.DataIntegrityViolationException ex, HttpServletRequest request) {
+
+        String message = "Database constraint violation: A record with this unique field (such as username, email, or employee reference) already exists.";
+        if (ex.getMessage() != null && ex.getMessage().contains("uk_user_username")) {
+            message = "Username already exists. Usernames must be unique across all accounts.";
+        } else if (ex.getMessage() != null && ex.getMessage().contains("uk_user_employee")) {
+            message = "This employee already has a linked user account.";
+        } else if (ex.getMessage() != null && ex.getMessage().contains("uk_employee_email")) {
+            message = "Email address is already registered.";
+        }
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                message,
+                LocalDateTime.now()
+        );
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    // 9. Fallback for unhandled internal server exceptions (500)
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGlobalException(
             Exception ex, HttpServletRequest request) {

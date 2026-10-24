@@ -15,6 +15,7 @@ import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -31,6 +32,8 @@ import lombok.Setter;
  * that determines their access level in the system.
  */
 
+import java.io.Serializable;
+
 @Entity
 @Table(name = "users", uniqueConstraints = {
                 @UniqueConstraint(name = "uk_user_username", columnNames = "username"),
@@ -45,7 +48,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class User {
+public class User implements Serializable {
 
         public enum Role {
                 ADMIN,
@@ -77,6 +80,10 @@ public class User {
         @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
         @Column(name = "password_hash", nullable = false, length = 255)
         private String passwordHash;
+
+        @Transient
+        @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+        private String password;
 
         @NotNull
         @Enumerated(EnumType.STRING)

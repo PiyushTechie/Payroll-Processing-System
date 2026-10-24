@@ -32,6 +32,8 @@ import lombok.Setter;
  * contact details, and employment terms.
  */
 
+import java.io.Serializable;
+
 @Entity
 @Table(
     name = "employee",
@@ -51,7 +53,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Employee {
+public class Employee implements Serializable {
 
     public enum EmployeeStatus {
         ACTIVE,
