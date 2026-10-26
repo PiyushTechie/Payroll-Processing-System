@@ -34,3 +34,6 @@ build/
 
 .env
 .github/
+
+# Application Configuration
+src/main/resources/application.properties
