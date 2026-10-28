@@ -48,7 +48,9 @@ import com.example.PayrollProcessingSystem.response.PayslipPayload;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/payroll")
 @Tag(name = "Payroll", description = "Endpoints for managing the end-to-end payroll flow with demo payment processing")
@@ -85,8 +87,11 @@ public class PayrollController {
     @Transactional
     public ResponseEntity<PayrollRunSummaryPayload> generatePayroll(@RequestParam int year, @RequestParam int month) {
         if (month < 1 || month > 12) {
+            log.warn("Invalid month requested for payroll generation: {}", month);
             throw new BadRequestException("Month must be between 1 and 12.");
         }
+
+        log.info("Initiating payroll generation for period {}/{}", month, year);
 
         LocalDate periodStart = LocalDate.of(year, month, 1);
         LocalDate periodEnd = LocalDate.of(year, month, periodStart.lengthOfMonth());
@@ -181,6 +186,7 @@ public class PayrollController {
         }
 
         run = payrollRunRepository.save(run);
+        log.info("Payroll run #{} generated successfully: {} employees, totalNet={}", run.getPayrollRunId(), run.getTotalEmployees(), run.getTotalNetSalary());
         return ResponseEntity.ok(mapToSummaryPayload(run));
     }
 
@@ -193,16 +199,21 @@ public class PayrollController {
                 .orElseThrow(() -> new ResourceNotFoundException("Payroll Run not found with ID: " + runId));
 
         if (run.getStatus() != PayrollRun.PayrollRunStatus.GENERATED) {
+            log.warn("Cannot approve payroll run #{}: invalid status {}", runId, run.getStatus());
             throw new BadRequestException("Payroll must be in GENERATED state to approve. Current status: " + run.getStatus());
         }
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String approverName = "System";
         if (authentication != null && authentication.isAuthenticated()) {
+            approverName = authentication.getName();
             userRepository.findByUsername(authentication.getName()).ifPresent(run::setApprovedBy);
         }
 
         run.setStatus(PayrollRun.PayrollRunStatus.FINANCE_APPROVED);
         payrollRunRepository.save(run);
+        log.info("Payroll run #{} approved by Finance user: {}", runId, approverName);
+
 
         Map<String, Object> response = new HashMap<>();
         response.put("message", "Payroll Run " + runId + " approved by Finance. Ready for payout.");
@@ -222,10 +233,12 @@ public class PayrollController {
                 .orElseThrow(() -> new ResourceNotFoundException("Payroll Run not found with ID: " + runId));
 
         if (run.getStatus() != PayrollRun.PayrollRunStatus.FINANCE_APPROVED) {
+            log.warn("Cannot execute payout for run #{}: status is {} (expected FINANCE_APPROVED)", runId, run.getStatus());
             throw new BadRequestException("Payroll must be FINANCE_APPROVED to execute payouts. Current status: " + run.getStatus());
         }
 
         String batchId = "DEMO-BATCH-" + runId + "-" + System.currentTimeMillis();
+        log.info("Executing payouts for payroll run #{}, batchId={}, recordsCount={}", runId, batchId, run.getPayrollRecords().size());
         int successCount = 0;
         BigDecimal totalDisbursed = BigDecimal.ZERO;
         List<Map<String, Object>> sampleTransactions = new ArrayList<>();
@@ -282,6 +295,8 @@ public class PayrollController {
 
         run.setStatus(PayrollRun.PayrollRunStatus.PAID);
         payrollRunRepository.save(run);
+        log.info("Direct deposit payouts executed for run #{}: batchId={}, {} transactions disbursed, totalAmount={}", runId, batchId, successCount, totalDisbursed);
+
 
         Map<String, Object> response = new HashMap<>();
         response.put("message", "Demo direct deposit payout executed successfully.");

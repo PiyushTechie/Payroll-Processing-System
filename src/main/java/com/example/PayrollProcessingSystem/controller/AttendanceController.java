@@ -19,7 +19,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/attendance")
 public class AttendanceController {
@@ -66,6 +68,8 @@ public class AttendanceController {
         attendance.setRemarks(request.getRemarks());
 
         Attendance savedAttendance = attendanceRepository.save(attendance);
+        log.info("Check-in recorded for Employee #{} ({}) on {}: time={}, status={}",
+                employee.getEmployeeId(), employee.getFirstName() + " " + employee.getLastName(), attendanceDate, checkInTime, savedAttendance.getStatus());
 
         CheckInResponsePayload responsePayload = CheckInResponsePayload.builder()
                 .attendanceId(savedAttendance.getAttendanceId())
@@ -134,7 +138,10 @@ public class AttendanceController {
         }
 
         Attendance updatedAttendance = attendanceRepository.save(attendance);
+        log.info("Check-out recorded for Employee #{} on {}: time={}, workingHours={}, overtimeHours={}",
+                employee.getEmployeeId(), attendanceDate, checkOutTime, updatedAttendance.getWorkingHours(), updatedAttendance.getOvertimeHours());
         return ResponseEntity.ok(mapToRecordPayload(updatedAttendance));
+
     }
 
     // POST /api/attendance/record (HR manual entry)

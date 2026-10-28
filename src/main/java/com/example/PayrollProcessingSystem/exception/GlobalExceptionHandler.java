@@ -12,7 +12,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -20,6 +22,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleResourceNotFoundException(
             ResourceNotFoundException ex, HttpServletRequest request) {
+
+        log.warn("Resource not found [{} {}]: {}", request.getMethod(), request.getRequestURI(), ex.getMessage());
 
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.NOT_FOUND.value(),
@@ -36,6 +40,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleBadRequestException(
             BadRequestException ex, HttpServletRequest request) {
 
+        log.warn("Bad request [{} {}]: {}", request.getMethod(), request.getRequestURI(), ex.getMessage());
+
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
                 HttpStatus.BAD_REQUEST.getReasonPhrase(),
@@ -51,6 +57,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handlePayrollProcessingException(
             PayrollProcessingException ex, HttpServletRequest request) {
 
+        log.warn("Payroll processing rejected [{} {}]: {}", request.getMethod(), request.getRequestURI(), ex.getMessage());
+
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.UNPROCESSABLE_CONTENT.value(),
                 HttpStatus.UNPROCESSABLE_CONTENT.getReasonPhrase(),
@@ -60,6 +68,7 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(errorResponse, HttpStatus.UNPROCESSABLE_CONTENT);
     }
+
 
     // 4. Handle DTO Validation Errors (@Valid failure on @NotBlank, @NotNull, etc.)
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -72,6 +81,8 @@ public class GlobalExceptionHandler {
             String errorMessage = error.getDefaultMessage();
             errors.put(fieldName, errorMessage);
         });
+
+        log.warn("Validation failed for request: {}", errors);
 
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
@@ -117,6 +128,8 @@ public class GlobalExceptionHandler {
             userFriendlyMessage = "Empty string \"\" is not allowed for enum or numeric fields. Please omit the field or supply a valid value.";
         }
 
+        log.warn("Malformed HTTP request body [{} {}]: {}", request.getMethod(), request.getRequestURI(), userFriendlyMessage);
+
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
                 HttpStatus.BAD_REQUEST.getReasonPhrase(),
@@ -137,6 +150,8 @@ public class GlobalExceptionHandler {
         String message = String.format("Parameter '%s' received invalid value '%s'. Expected type is %s.",
                 paramName, ex.getValue(), expectedType);
 
+        log.warn("Parameter mismatch [{} {}]: {}", request.getMethod(), request.getRequestURI(), message);
+
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
                 HttpStatus.BAD_REQUEST.getReasonPhrase(),
@@ -155,6 +170,8 @@ public class GlobalExceptionHandler {
         String message = (ex.getMessage() != null && !ex.getMessage().isBlank() && !ex.getMessage().equalsIgnoreCase("Access Denied"))
                 ? ex.getMessage()
                 : "Access Denied: You do not have the required permissions to perform this action.";
+
+        log.warn("Access denied [{} {}]: {}", request.getMethod(), request.getRequestURI(), message);
 
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.FORBIDDEN.value(),
@@ -180,6 +197,8 @@ public class GlobalExceptionHandler {
             message = "Email address is already registered.";
         }
 
+        log.warn("Data integrity violation [{} {}]: {}", request.getMethod(), request.getRequestURI(), message);
+
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
                 HttpStatus.BAD_REQUEST.getReasonPhrase(),
@@ -194,6 +213,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGlobalException(
             Exception ex, HttpServletRequest request) {
+
+        log.error("Unhandled internal server exception [{} {}]", request.getMethod(), request.getRequestURI(), ex);
 
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),

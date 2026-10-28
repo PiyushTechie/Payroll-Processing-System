@@ -43,6 +43,7 @@ import com.example.PayrollProcessingSystem.response.LeaveResponsePayload;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Controller responsible for employee leave management.
@@ -50,6 +51,7 @@ import lombok.RequiredArgsConstructor;
  * balance verification, approval workflow, balance deduction,
  * cancellation, and attendance synchronization.
  */
+@Slf4j
 @RestController
 @RequestMapping("/api/leaves")
 @RequiredArgsConstructor
@@ -113,7 +115,10 @@ public class LeaveController {
                 .build();
 
         LeaveRequest saved = leaveRequestRepository.save(leaveRequest);
+        log.info("Leave applied: Request #{} for Employee #{} (Type={}, {} to {}, Days={})",
+                saved.getLeaveRequestId(), employee.getEmployeeId(), payload.getLeaveType(), payload.getStartDate(), payload.getEndDate(), requestedDays);
         return new ResponseEntity<>(mapToResponsePayload(saved), HttpStatus.CREATED);
+
     }
 
     /**
@@ -194,6 +199,8 @@ public class LeaveController {
         }
 
         LeaveRequest updated = leaveRequestRepository.save(leaveRequest);
+        log.info("Leave request #{} reviewed by {}: newStatus={}",
+                leaveRequest.getLeaveRequestId(), (reviewer != null ? reviewer.getUsername() : "System"), payload.getNewStatus());
         return ResponseEntity.ok(mapToResponsePayload(updated));
     }
 
@@ -207,6 +214,7 @@ public class LeaveController {
                 .orElseThrow(() -> new ResourceNotFoundException("Leave request not found with ID: " + id));
 
         if (leaveRequest.getStatus() == LeaveRequestStatus.CANCELLED || leaveRequest.getStatus() == LeaveRequestStatus.REJECTED) {
+            log.warn("Cannot cancel leave request #{}: status is {}", id, leaveRequest.getStatus());
             throw new BadRequestException("Leave request cannot be cancelled from current status: " + leaveRequest.getStatus());
         }
 
@@ -237,8 +245,10 @@ public class LeaveController {
 
         leaveRequest.setStatus(LeaveRequestStatus.CANCELLED);
         LeaveRequest updated = leaveRequestRepository.save(leaveRequest);
+        log.info("Leave request #{} cancelled: balance and attendance reverted", id);
         return ResponseEntity.ok(mapToResponsePayload(updated));
     }
+
 
     /**
      * Allocate or update leave balance for an employee (HR / Admin).
